@@ -1,35 +1,26 @@
-# api/main.py
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 import json
 import os
-from typing import List
 
 app = FastAPI()
 
-# Enable CORS (allows requests from any domain)
+# Fix CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
-    allow_methods=["GET"],
+    allow_origins=["*"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Load student data from JSON
-def load_student_data():
-    json_path = os.path.join(os.path.dirname(__file__), 'students.json')
-    with open(json_path, 'r') as file:
-        students = json.load(file)
-    return {student['name']: student['mark'] for student in students}
+# Load data - WILL WORK on Vercel
+def get_marks():
+    with open(os.path.join(os.path.dirname(__file__), 'students.json')) as f:
+        data = json.load(f)
+    return {item['name']: item['mark'] for item in data}
 
-students = load_student_data()
+marks_data = get_marks()
 
 @app.get("/api")
-async def get_marks(names: List[str] = Query(...)):
-    marks = []
-    for name in names:
-        if name in students:
-            marks.append(students[name])
-        else:
-            marks.append(None)  # Return None if name not found
-    return {"marks": marks}
+async def marks(names: list = Query(...)):
+    return {"marks": [marks_data.get(name) for name in names]}
