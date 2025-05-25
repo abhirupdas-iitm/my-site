@@ -24,3 +24,7 @@ marks_data = get_marks()
 @app.get("/api")
 async def marks(names: list = Query(...)):
     return {"marks": [marks_data.get(name) for name in names]}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+)
